@@ -4,5 +4,6 @@ import { registerSW } from 'virtual:pwa-register'
 import App from './App'
 import './style.css'
 import './diagnostics.css'
+import './layout.css'
 registerSW({ immediate: true })
 createRoot(document.getElementById('root')!).render(<StrictMode><App /></StrictMode>)

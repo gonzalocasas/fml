@@ -12,6 +12,12 @@ export default function App() {
   const [draft,setDraft]=useState(''), [pin,setPin]=useState(''), [votes,setVotes]=useState<Vote[]>([]), [peers,setPeers]=useState(0)
   const [drag,setDrag]=useState(0), [exit,setExit]=useState<'yes'|'no'|null>(null), [showNetwork,setShowNetwork]=useState(false), [diag,setDiag]=useState<SyncDiagnostics|null>(null)
   const start=useRef(0); const sync=useRef<ReturnType<typeof connectFamily>|null>(null)
+  useEffect(()=>{
+    const stop=(event:Event)=>event.preventDefault()
+    const stopPinch=(event:TouchEvent)=>{if(event.touches.length>1)event.preventDefault()}
+    document.addEventListener('gesturestart',stop,{passive:false}); document.addEventListener('gesturechange',stop,{passive:false}); document.addEventListener('gestureend',stop,{passive:false}); document.addEventListener('touchmove',stopPinch,{passive:false})
+    return()=>{document.removeEventListener('gesturestart',stop);document.removeEventListener('gesturechange',stop);document.removeEventListener('gestureend',stop);document.removeEventListener('touchmove',stopPinch)}
+  },[])
   useEffect(()=>{ (async()=>{ setVotes(await getVotes()); const p=await getSetting<string>('profile'); if(p)setProfile(p) })() },[])
   useEffect(()=>{ sync.current=connectFamily(room,getVotes,{onVotes:async incoming=>{await mergeVotes(incoming);setVotes(await getVotes())},onPeers:setPeers,onDiagnostics:setDiag}); return()=>{ void sync.current?.leave() } },[])
   const ordered=useMemo(()=>prioritize(recipes,profile),[profile])
@@ -29,7 +35,7 @@ export default function App() {
         onPointerDown={e=>{start.current=e.clientX;e.currentTarget.setPointerCapture(e.pointerId)}}
         onPointerMove={e=>{if(e.currentTarget.hasPointerCapture(e.pointerId))setDrag(e.clientX-start.current)}}
         onPointerUp={e=>{e.currentTarget.releasePointerCapture(e.pointerId);Math.abs(drag)>90?vote(drag>0):setDrag(0)}}>
-        {exit&&<div className={`verdict ${exit}`}>{exit==='yes'?<Heart fill="currentColor"/>:<X/>}</div>}
+        {exit&&<div className={`verdict ${exit}`}>{exit==='yes'?<Heart fill="currentColor"/>:<span className="puff"><i/><i/><i/><i/><i/></span>}</div>}
         <img src={r.image} alt={r.name}/><div className="shade"/><div className="source">{r.sourceLabel}</div>
         <div className="cardcopy"><div className="time"><Clock3 size={16}/>{r.minutes} min</div><h1>{r.name}</h1><div className="ingredients">{r.ingredients.map(x=><span key={x}>{x}</span>)}</div></div>
       </article>

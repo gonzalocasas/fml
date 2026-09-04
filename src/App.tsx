@@ -38,7 +38,8 @@ export default function App() {
         onWheel={e=>{if(e.deltaY>35)setDetails(true)}}
         onPointerDown={e=>{start.current={x:e.clientX,y:e.clientY};window.getSelection()?.removeAllRanges();e.currentTarget.setPointerCapture(e.pointerId)}}
         onPointerMove={e=>{if(e.currentTarget.hasPointerCapture(e.pointerId)){const dx=e.clientX-start.current.x,dy=e.clientY-start.current.y;if(Math.abs(dx)>Math.abs(dy))setDrag(dx)}}}
-        onPointerUp={e=>{const dy=e.clientY-start.current.y;e.currentTarget.releasePointerCapture(e.pointerId);if(dy<-70&&Math.abs(dy)>Math.abs(drag)){setDrag(0);setDetails(true)}else if(Math.abs(drag)>90)vote(drag>0);else setDrag(0)}}>
+        onPointerUp={e=>{const dy=e.clientY-start.current.y;e.currentTarget.releasePointerCapture(e.pointerId);if(dy<-70&&Math.abs(dy)>Math.abs(drag)){setDrag(0);setDetails(true)}else if(Math.abs(drag)>90)vote(drag>0);else setDrag(0)}}
+        onPointerCancel={()=>setDrag(0)}>
         {exit&&<div className={`verdict ${exit}`}>{exit==='yes'?<Heart fill="currentColor"/>:<span className="puff"><i/><i/><i/><i/><i/></span>}</div>}
         <img src={r.image} alt={r.name} draggable="false"/><div className="shade"/><div className="source">{r.sourceLabel}</div>
         <div className="cardcopy"><div className="time"><Clock3 size={16}/>{r.minutes} min</div><h1>{r.name}</h1><div className="ingredients">{r.ingredients.map(x=><span key={x}>{x}</span>)}</div></div>

@@ -5,7 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc -b && vite build",
+    "generate:images": "node scripts/generate-recipe-images.mjs",
+    "build": "npm run generate:images && tsc -b && vite build",
     "import:instagram": "node scripts/import-instagram-export.mjs",
     "preview": "vite preview"
   },
@@ -20,6 +21,7 @@
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
     "@vitejs/plugin-react": "^4.3.4",
+    "sharp": "^0.35.4",
     "typescript": "^5.7.2",
     "vite": "^6.0.1",
     "vite-plugin-pwa": "^0.21.1"

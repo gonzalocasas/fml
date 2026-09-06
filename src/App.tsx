@@ -1,15 +1,17 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { ArrowLeft, ChefHat, ChevronDown, Clock3, Copy, ExternalLink, Heart, Menu, Plus, RotateCcw, Trophy, UserRound, Users, Wifi, WifiOff, X } from 'lucide-react'
-import { recipes } from './data'
+import { ArrowLeft, ChefHat, ChevronDown, Clock3, Copy, ExternalLink, Heart, Menu, Plus, RotateCcw, Shuffle, Trophy, UserRound, Users, Wifi, WifiOff, X } from 'lucide-react'
+import { recipes, type Recipe } from './data'
 import { preloadRecipeImage, recipeImageVariants, type RecipeImageKind } from './images'
 import { getSetting, getVotes, mergeVotes, renameVotes, saveVote, setSetting, type Vote } from './store'
 import { connectFamily, type SyncDiagnostics } from './sync'
 
 type View = 'swipe'|'ranking'|'profile'
+type Category = 'Meals'|'Bites'|'Sweet'|'Drinks'
 const room = new URLSearchParams(location.search).get('room') || 'the-hungry-council'
 
 export default function App() {
   const [view,setView]=useState<View>('swipe'), [index,setIndex]=useState(0), [profile,setProfile]=useState(''), [profileReady,setProfileReady]=useState(false)
+  const [category,setCategory]=useState<Category>('Meals'), [shuffleSeed,setShuffleSeed]=useState(()=>sessionStorage.getItem('fml-shuffle-seed')||crypto.randomUUID())
   const [draft,setDraft]=useState(''), [votes,setVotes]=useState<Vote[]>([]), [activePeers,setActivePeers]=useState<string[]>([]), [matchSplash,setMatchSplash]=useState<{recipeId:string;names:string[]}|null>(null)
   const [drag,setDrag]=useState(0), [exit,setExit]=useState<'yes'|'no'|null>(null), [dragging,setDragging]=useState(false), [showNetwork,setShowNetwork]=useState(false), [diag,setDiag]=useState<SyncDiagnostics|null>(null)
   const [showMenu,setShowMenu]=useState(false), [details,setDetails]=useState(false), [detailRecipeId,setDetailRecipeId]=useState<string|null>(null), [detailDrag,setDetailDrag]=useState(0)
@@ -24,9 +26,12 @@ export default function App() {
   useEffect(()=>{ sync.current=connectFamily(room,getVotes,()=>profileRef.current,{onVotes:async incoming=>{await mergeVotes(incoming);setVotes(await getVotes())},onPeers:setActivePeers,onDiagnostics:setDiag}); return()=>{ void sync.current?.leave() } },[])
   useEffect(()=>{if(profileReady&&profile)void sync.current?.updateProfile()},[profile,profileReady])
   useEffect(()=>()=>{cardAnimation.current?.cancel();if(exitTimer.current!==null)window.clearTimeout(exitTimer.current)},[])
-  const ordered=useMemo(()=>prioritize(recipes,profile),[profile])
+  const categoryRecipes=useMemo(()=>recipes.filter(recipe=>categoryFor(recipe)===category),[category])
+  const ordered=useMemo(()=>shuffle(categoryRecipes,`${profile}:${category}:${shuffleSeed}`),[categoryRecipes,profile,category,shuffleSeed])
   const current=index%ordered.length
   useEffect(()=>{for(let offset=1;offset<=2;offset++)preloadRecipeImage(ordered[(current+offset)%ordered.length].image)},[current,ordered])
+  const chooseCategory=(next:Category)=>{setCategory(next);setIndex(0)}
+  const reshuffle=()=>{const seed=crypto.randomUUID();sessionStorage.setItem('fml-shuffle-seed',seed);setShuffleSeed(seed);setIndex(0)}
   const addEffect=(className:string,styles:Record<string,string>,frames:Keyframe[],options:KeyframeAnimationOptions)=>{const layer=fxRef.current;if(!layer)return;const node=document.createElement('i');node.className=className;Object.assign(node.style,styles);if(className==='checkPulse')node.textContent='✓';layer.appendChild(node);const animation=node.animate(frames,options);animation.onfinish=()=>node.remove();animation.oncancel=()=>node.remove()}
   const createRejectEffects=()=>{if(matchMedia('(prefers-reduced-motion: reduce)').matches)return;const card=cardRef.current;if(!card)return;for(let i=0;i<28;i++){const size=12+Math.random()*28,x=card.clientWidth*(.58+Math.random()*.34),y=card.clientHeight*(.25+Math.random()*.5),tx=-(28+Math.random()*115),ty=(Math.random()-.5)*125;addEffect('smokeParticle',{width:`${size}px`,height:`${size}px`,left:`${x}px`,top:`${y}px`},[{transform:'translate(-50%,-50%) scale(.15)',opacity:0,filter:'blur(0px)'},{transform:'translate(-50%,-50%) scale(.75)',opacity:.72,filter:'blur(1px)',offset:.25},{transform:`translate(calc(-50% + ${tx}px),calc(-50% + ${ty}px)) scale(${1.15+Math.random()})`,opacity:0,filter:'blur(7px)'}],{duration:380+Math.random()*260,delay:Math.random()*70,easing:'cubic-bezier(.2,.7,.3,1)',fill:'both'})}}
   const createApproveEffects=()=>{if(matchMedia('(prefers-reduced-motion: reduce)').matches)return;const card=cardRef.current;if(!card)return;for(let i=0;i<13;i++){const width=28+Math.random()*67,x=card.clientWidth*(.1+Math.random()*.38),y=card.clientHeight*(.28+Math.random()*.48);addEffect('lightStreak',{width:`${width}px`,left:`${x}px`,top:`${y}px`},[{transform:'translateX(-18px) scaleX(.25)',opacity:0},{transform:'translateX(0) scaleX(1)',opacity:.8,offset:.28},{transform:`translate(${90+Math.random()*100}px,${-12-Math.random()*35}px) scaleX(1.55)`,opacity:0}],{duration:260+Math.random()*170,delay:Math.random()*80,easing:'cubic-bezier(.18,.75,.25,1)',fill:'both'})}for(let i=0;i<7;i++){const x=card.clientWidth*(.42+Math.random()*.35),y=card.clientHeight*(.25+Math.random()*.42);addEffect('lightSpark',{left:`${x}px`,top:`${y}px`},[{transform:'scale(.2)',opacity:0},{transform:'scale(1)',opacity:1,offset:.22},{transform:`translate(${55+Math.random()*100}px,${-25-Math.random()*70}px) scale(0)`,opacity:0}],{duration:300+Math.random()*150,delay:Math.random()*70,easing:'ease-out',fill:'both'})}addEffect('checkPulse',{left:`${card.clientWidth*.72}px`,top:`${card.clientHeight*.38}px`},[{transform:'translate(-50%,-50%) scale(.35)',opacity:0},{transform:'translate(-50%,-50%) scale(1.12)',opacity:1,offset:.32},{transform:'translate(-50%,-58%) scale(.96)',opacity:.95,offset:.62},{transform:'translate(-50%,-90%) scale(.9)',opacity:0}],{duration:620,easing:'cubic-bezier(.2,.8,.25,1)',fill:'both'})}
@@ -50,6 +55,7 @@ export default function App() {
     {showNetwork&&<aside className="network"><div className="networkHead">{activePeers.length?<Wifi/>:<WifiOff/>}<div><b>{activePeers.length?'Dinner crew connected':'Waiting for the family…'}</b><small>{[profile,...activePeers].filter(Boolean).join(' · ')||'Choose your name'}</small></div></div><div className="people">{[profile,...activePeers].filter(Boolean).map((name,i)=><span key={`${name}-${i}`}><i className="avatar">{name[0].toUpperCase()}</i>{name}{i===0&&<small>you</small>}</span>)}</div><dl><div><dt>Room</dt><dd>{room}</dd></div><div><dt>Connection</dt><dd>{diag?.lastEvent||'Initializing'}</dd></div><div><dt>Signal relays</dt><dd>{diag?.relays.filter(x=>x.state==='open').length||0}/{diag?.relays.length||0} online</dd></div></dl>{diag?.error&&<p className="networkError">{diag.error}</p>}<button className="copy" onClick={()=>navigator.clipboard.writeText(`${location.origin}${location.pathname}?room=${encodeURIComponent(room)}`)}><Copy/>Copy room link</button><p className="networkTip">Share this room link with your dinner crew. Names and votes stay on each device and sync directly while you’re together.</p></aside>}
     {view==='swipe'&&<section className="deck">
       <div className="eyebrow"><span>Tonight's contenders</span><b>{current+1} / {ordered.length}</b></div>
+      <div className="categoryBar"><div className="categoryTabs" role="tablist" aria-label="Recipe category">{(['Meals','Bites','Sweet','Drinks'] as Category[]).map(item=><button key={item} role="tab" aria-selected={category===item} className={category===item?'active':''} onClick={()=>chooseCategory(item)}>{item}</button>)}</div><button className="shuffleButton" onClick={reshuffle} aria-label={`Reshuffle ${category.toLowerCase()}`} title="Reshuffle"><Shuffle/></button></div>
       <div className="cardStage"><div className="swipeFx" ref={fxRef} aria-hidden="true"/><article ref={cardRef} tabIndex={0} aria-label={`${r.name}. Swipe left to reject or right to approve.`} className={`card ${dragging?'dragging':''} ${exit?`exiting ${exit}`:''}`} style={{transform:`translate(${drag}px,${drag>0?-Math.min(drag*.055,12):0}px) rotate(${Math.max(-8,Math.min(8,drag/45))}deg) scale(${drag<0?1-Math.min(Math.abs(drag)/5000,.04):1+Math.min(drag/6000,.025)})`,opacity:drag<0?1-Math.min(Math.abs(drag)/1400,.12):1}}
         onDragStart={e=>e.preventDefault()}
         onWheel={e=>{if(e.deltaY>35)setDetails(true)}}
@@ -77,8 +83,18 @@ function RecipeImage({src,alt,kind,priority=false,draggable}:{src:string;alt:str
   return <img src={kind==='thumb'?variants.thumb:kind==='detail'?variants.detail:variants.card} srcSet={responsive?`${variants.card} 480w, ${variants.detail} 960w`:undefined} sizes={responsive?'(max-width: 600px) 92vw, 520px':undefined} alt={alt} loading={priority?'eager':'lazy'} decoding="async" fetchPriority={priority?'high':'auto'} draggable={draggable} style={{backgroundImage:`url(${variants.placeholder})`,backgroundSize:'cover',backgroundPosition:'center'}}/>
 }
 
-function prioritize<T extends {id:string}>(items:T[], profile:string):T[]{
-  const day=Math.floor(Date.now()/86400000)
-  const score=(id:string)=>{let h=day;for(const c of `${profile}:${id}`)h=Math.imul(h^c.charCodeAt(0),2654435761);return(h>>>0)/4294967295}
-  return [...items].sort((a,b)=>score(b.id)-score(a.id))
+function categoryFor(recipe:Recipe):Category {
+  if(recipe.tags.includes('Drinks')||/\b(?:latte|coffee|rosé|drink)\b/i.test(recipe.name))return'Drinks'
+  if(recipe.tags.some(tag=>tag==='Dessert'||tag==='Baking'))return'Sweet'
+  if(recipe.tags.some(tag=>['Sides','Sauce','Antipasti'].includes(tag))||/\b(?:salad|dip|sauce|potatoes|toast|bites|mozzarella|storage|marinades)\b/i.test(recipe.name))return'Bites'
+  return'Meals'
+}
+
+function shuffle<T>(items:T[], seedText:string):T[]{
+  let seed=2166136261
+  for(const char of seedText)seed=Math.imul(seed^char.charCodeAt(0),16777619)
+  const random=()=>{seed+=0x6d2b79f5;let value=seed;value=Math.imul(value^value>>>15,value|1);value^=value+Math.imul(value^value>>>7,value|61);return((value^value>>>14)>>>0)/4294967296}
+  const result=[...items]
+  for(let i=result.length-1;i>0;i--){const j=Math.floor(random()*(i+1));[result[i],result[j]]=[result[j],result[i]]}
+  return result
 }

@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
+    "import:instagram": "node scripts/import-instagram-export.mjs",
     "preview": "vite preview"
   },
   "dependencies": {

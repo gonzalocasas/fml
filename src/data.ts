@@ -1,5 +1,6 @@
 import { instagramRecipes } from './instagramRecipes'
 import { chatgptRecipes } from './chatgptRecipes'
+import { externalRecipeDetails } from './externalRecipeDetails'
 
 export type RecipeIngredient = { item:string; amount?:string|null; optional?:boolean; alternatives?:string[] }
 
@@ -12,7 +13,7 @@ export type Recipe = {
 
 const img = (name: string) => `${import.meta.env.BASE_URL}recipes/${name}.jpg`
 
-export const recipes: Recipe[] = [
+const baseRecipes: Recipe[] = [
   { id:'chicken-souvlaki', name:'Chicken souvlaki', minutes:35, ingredients:['chicken','lemon','oregano','tzatziki'], image:img('chicken-souvlaki'), source:'https://www.mygreekdish.com/recipe/souvlaki-with-chicken-and-pita-breads', sourceLabel:'Notion', tags:['Dinner','Kids'] },
   { id:'parmigiana', name:'Parmigiana di melanzane', minutes:75, ingredients:['aubergine','tomato','mozzarella','basil'], image:img('parmigiana'), source:'https://www.recipetineats.com/eggplant-parmigiana', sourceLabel:'Notion', tags:['Dinner','Kids'] },
   { id:'shrimp-couscous', name:'Couscous with shrimp', minutes:25, ingredients:['shrimp','couscous','lemon','parsley'], image:img('shrimp-couscous'), source:'#', sourceLabel:'Notion', tags:['Dinner','Easy'] },
@@ -64,3 +65,5 @@ export const recipes: Recipe[] = [
   ...instagramRecipes,
   ...chatgptRecipes
 ]
+
+export const recipes: Recipe[] = baseRecipes.map(recipe=>({...recipe,...externalRecipeDetails[recipe.id]}))

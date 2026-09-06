@@ -25,6 +25,7 @@ export default function App() {
   useEffect(()=>{ (async()=>{setVotes(await getVotes());const p=await getSetting<string>('profile');if(p){profileRef.current=p;setProfile(p)}else setView('profile');setProfileReady(true)})() },[])
   useEffect(()=>{ sync.current=connectFamily(room,getVotes,()=>profileRef.current,{onVotes:async incoming=>{await mergeVotes(incoming);setVotes(await getVotes())},onPeers:setActivePeers,onDiagnostics:setDiag}); return()=>{ void sync.current?.leave() } },[])
   useEffect(()=>{if(profileReady&&profile)void sync.current?.updateProfile()},[profile,profileReady])
+  useEffect(()=>{let wakeLock:WakeLockSentinel|null=null;const request=async()=>{if(!details||document.visibilityState!=='visible'||!('wakeLock'in navigator))return;try{wakeLock=await navigator.wakeLock.request('screen')}catch{wakeLock=null}};const visibility=()=>{if(document.visibilityState==='visible')void request()};void request();document.addEventListener('visibilitychange',visibility);return()=>{document.removeEventListener('visibilitychange',visibility);void wakeLock?.release()}},[details])
   useEffect(()=>()=>{cardAnimation.current?.cancel();if(exitTimer.current!==null)window.clearTimeout(exitTimer.current)},[])
   const categoryRecipes=useMemo(()=>recipes.filter(recipe=>categoryFor(recipe)===category),[category])
   const ordered=useMemo(()=>shuffle(categoryRecipes,`${profile}:${category}:${shuffleSeed}`),[categoryRecipes,profile,category,shuffleSeed])

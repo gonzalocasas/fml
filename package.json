@@ -9,6 +9,7 @@
     "build": "npm run generate:images && tsc -b && vite build",
     "import:instagram": "node scripts/import-instagram-export.mjs",
     "import:chatgpt": "node scripts/import-chatgpt-archive.mjs",
+    "enrich:recipes": "node scripts/enrich-recipe-details.mjs",
     "preview": "vite preview"
   },
   "dependencies": {

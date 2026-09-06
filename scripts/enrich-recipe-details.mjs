@@ -64,7 +64,15 @@ const captionDetails = (caption,recipe) => {
   const ingredientMarker=/\b(?:ingredients?|ingredientes?|zutaten|ingredienti|malzemeler|you(?:'|’)ll need|to make)\s*:?/i
   const methodMarker=/\b(?:method|instructions?|preparation|preparación|how to make|steps?|pasos|preparazione)\s*:?/i
   const ingredientStart=normalized.search(ingredientMarker)
-  const methodStart=normalized.search(methodMarker)
+  let methodStart=normalized.search(methodMarker)
+  // Some captions label the ingredients but continue directly into a bulleted
+  // method. Detect the first instruction-like bullet so it does not get folded
+  // into the ingredient list (for example, Yemeni lahsa).
+  if(ingredientStart>=0&&methodStart<0){
+    const afterIngredients=normalized.slice(ingredientStart)
+    const inferred=afterIngredients.search(/\n\s*[-*•]\s*(?:start|begin|first|once|then|next|meanwhile|add|mix|stir|heat|cook|bake|roast|fry|saut(?:é|e)|place|put|pour|combine|whisk|blend|cover|switch|turn|garnish|serve)\b/i)
+    if(inferred>=0)methodStart=ingredientStart+inferred
+  }
   let ingredientLines=[]
   if(ingredientStart>=0&&(methodStart<0||ingredientStart<methodStart)){
     const block=normalized.slice(ingredientStart,methodStart>ingredientStart?methodStart:ingredientStart+1800).replace(ingredientMarker,'')

@@ -4577,42 +4577,16 @@ export const externalRecipeDetails: Record<string, Partial<Recipe>> = {
       {
         "item": "1 tbsp tomato puree",
         "amount": null
-      },
-      {
-        "item": "start by chopping the veggies. Saute the onion in a drizzle of olive oil.",
-        "amount": null
-      },
-      {
-        "item": "once the onion starts to brown add the tomatoes. Season with salt. Pepper. Cumin. Coriander. Paprika. Tomato puree and any spices that you prefer.",
-        "amount": null
-      },
-      {
-        "item": "keep cooking the tomatoes on medium low till dissolved.",
-        "amount": null
-      },
-      {
-        "item": "switch off the heat then crack the eggs in the mixture. Mix it thoroughly and add a splash of water.",
-        "amount": null
-      },
-      {
-        "item": "turn the heat back on low and spread the cheese on top.",
-        "amount": null
-      },
-      {
-        "item": "cover and let it cook for 3-5 minutes.",
-        "amount": null
-      },
-      {
-        "item": "garnish. Serve with bread and enjoy.",
-        "amount": null
-      },
-      {
-        "item": "#breakfast #eggs #cooking #recipe #breakfastideas #foodporn #foodie #food",
-        "amount": null
       }
     ],
     "steps": [
-      "The saved post does not contain a written method. Open the original Instagram post to follow the demonstrated preparation."
+      "start by chopping the veggies. Saute the onion in a drizzle of olive oil.",
+      "once the onion starts to brown add the tomatoes. Season with salt. Pepper. Cumin. Coriander. Paprika. Tomato puree and any spices that you prefer.",
+      "keep cooking the tomatoes on medium low till dissolved.",
+      "switch off the heat then crack the eggs in the mixture. Mix it thoroughly and add a splash of water.",
+      "turn the heat back on low and spread the cheese on top.",
+      "cover and let it cook for 3-5 minutes.",
+      "garnish. Serve with bread and enjoy."
     ]
   },
   "instagram-c_yarlwvmi9": {

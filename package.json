@@ -8,6 +8,7 @@
     "generate:images": "node scripts/generate-recipe-images.mjs",
     "build": "npm run generate:images && tsc -b && vite build",
     "import:instagram": "node scripts/import-instagram-export.mjs",
+    "import:chatgpt": "node scripts/import-chatgpt-archive.mjs",
     "preview": "vite preview"
   },
   "dependencies": {

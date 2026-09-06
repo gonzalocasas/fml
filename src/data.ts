@@ -1,8 +1,13 @@
 import { instagramRecipes } from './instagramRecipes'
+import { chatgptRecipes } from './chatgptRecipes'
+
+export type RecipeIngredient = { item:string; amount?:string|null; optional?:boolean; alternatives?:string[] }
 
 export type Recipe = {
   id: string; name: string; minutes: number; ingredients: string[]; image: string;
-  source: string; sourceLabel: 'Notion' | 'Instagram' | 'Akis'; tags: string[]
+  source: string; sourceLabel: 'Notion' | 'Instagram' | 'Akis' | 'ChatGPT'; tags: string[];
+  description?:string; fullIngredients?:RecipeIngredient[]; steps?:string[]; equipment?:string[];
+  notes?:string[]; servings?:string|number|null; archiveFidelity?:string
 }
 
 const img = (name: string) => `${import.meta.env.BASE_URL}recipes/${name}.jpg`
@@ -56,5 +61,6 @@ export const recipes: Recipe[] = [
   { id:'matambre', name:'Oven-baked matambre arrollado', minutes:150, ingredients:['flank steak','egg','pepper','herbs'], image:img('notion-38'), source:'https://www.tiktok.com/@lasrecetasdesimon/video/7319261096693566726', sourceLabel:'Notion', tags:['Dinner','Weekend'] },
   { id:'lemon-lavender-latte', name:'Lemon lavender latte', minutes:15, ingredients:['espresso','milk','lemon','lavender'], image:img('notion-39'), source:'https://morgandrinkscoffee.com/blogs/recipes-1/lemon-lavender-latte', sourceLabel:'Notion', tags:['Drinks','Easy'] },
   { id:'hot-honey-crispy-chicken', name:'Hot honey crispy chicken', minutes:45, ingredients:['chicken','breadcrumbs','honey','chilli'], image:img('notion-40'), source:'https://www.instagram.com/p/DSPr1-0AnH8/', sourceLabel:'Instagram', tags:['Dinner'] },
-  ...instagramRecipes
+  ...instagramRecipes,
+  ...chatgptRecipes
 ]

@@ -5,4 +5,5 @@ vite.config.js
 vite.config.d.ts
 .DS_Store
 data/instagram-*/
+data/gonzalo_chatgpt_recipe_archive.json
 public/recipes/generated/

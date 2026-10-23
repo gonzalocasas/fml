@@ -11,6 +11,12 @@ the meal board settle dinner.
   signaling and exchange an append-only vote log over WebRTC.
 - No application server or paid database is required.
 
+The default room is `<hostname>-<YYYY-MM-DD>`, using the date in Europe/Zurich.
+Visitors on the same hostname automatically share a room, which changes at Zurich
+midnight (including while the app is open). An explicit `?room=...` link overrides
+the daily room and stays fixed. Rooms are public and do not require authentication.
+Changing rooms does not clear locally stored votes.
+
 ```bash
 npm install
 npm run dev

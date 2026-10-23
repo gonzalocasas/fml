@@ -7,9 +7,22 @@ import { connectFamily, type SyncDiagnostics } from './sync'
 
 type View = 'swipe'|'ranking'|'profile'
 type Category = 'Meals'|'Bites'|'Sweet'|'Drinks'
-const room = new URLSearchParams(location.search).get('room') || 'the-hungry-council'
+const explicitRoom = new URLSearchParams(location.search).get('room')
+function currentRoom() {
+  const date = new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'Europe/Zurich', year: 'numeric', month: '2-digit', day: '2-digit'
+  }).format(new Date())
+  return explicitRoom || `${location.hostname}-${date}`
+}
 
 export default function App() {
+  const [room,setRoom]=useState(currentRoom)
+  useEffect(()=>{
+    const update=()=>setRoom(currentRoom())
+    const timer=window.setInterval(update,1000)
+    document.addEventListener('visibilitychange',update)
+    return()=>{window.clearInterval(timer);document.removeEventListener('visibilitychange',update)}
+  },[])
   const [view,setView]=useState<View>('swipe'), [index,setIndex]=useState(0), [profile,setProfile]=useState(''), [profileReady,setProfileReady]=useState(false)
   const [category,setCategory]=useState<Category>('Meals'), [shuffleSeed,setShuffleSeed]=useState(()=>sessionStorage.getItem('fml-shuffle-seed')||crypto.randomUUID())
   const [draft,setDraft]=useState(''), [votes,setVotes]=useState<Vote[]>([]), [activePeers,setActivePeers]=useState<string[]>([]), [matchSplash,setMatchSplash]=useState<{recipeId:string;names:string[]}|null>(null)
@@ -23,8 +36,8 @@ export default function App() {
     return()=>{document.removeEventListener('gesturestart',stop);document.removeEventListener('gesturechange',stop);document.removeEventListener('gestureend',stop);document.removeEventListener('touchmove',stopPinch)}
   },[])
   useEffect(()=>{ (async()=>{setVotes(await getVotes());const p=await getSetting<string>('profile');if(p){profileRef.current=p;setProfile(p)}else setView('profile');setProfileReady(true)})() },[])
-  useEffect(()=>{ sync.current=connectFamily(room,getVotes,()=>profileRef.current,{onVotes:async incoming=>{await mergeVotes(incoming);setVotes(await getVotes())},onPeers:setActivePeers,onDiagnostics:setDiag}); return()=>{ void sync.current?.leave() } },[])
-  useEffect(()=>{if(profileReady&&profile)void sync.current?.updateProfile()},[profile,profileReady])
+  useEffect(()=>{ setActivePeers([]);sync.current=connectFamily(room,getVotes,()=>profileRef.current,{onVotes:async incoming=>{await mergeVotes(incoming);setVotes(await getVotes())},onPeers:setActivePeers,onDiagnostics:setDiag}); return()=>{ void sync.current?.leave() } },[room])
+  useEffect(()=>{if(profileReady&&profile)void sync.current?.updateProfile()},[profile,profileReady,room])
   useEffect(()=>{let wakeLock:WakeLockSentinel|null=null;const request=async()=>{if(!details||document.visibilityState!=='visible'||!('wakeLock'in navigator))return;try{wakeLock=await navigator.wakeLock.request('screen')}catch{wakeLock=null}};const visibility=()=>{if(document.visibilityState==='visible')void request()};void request();document.addEventListener('visibilitychange',visibility);return()=>{document.removeEventListener('visibilitychange',visibility);void wakeLock?.release()}},[details])
   useEffect(()=>()=>{cardAnimation.current?.cancel();if(exitTimer.current!==null)window.clearTimeout(exitTimer.current)},[])
   const categoryRecipes=useMemo(()=>recipes.filter(recipe=>categoryFor(recipe)===category),[category])
